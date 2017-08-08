@@ -1,9 +1,14 @@
 'use strict'; /*jslint node:true*/
 
 let screen; 
-let old_x, old_y; 
+
+let px, py,
+    px_0, py_0,
+    dx, dy;
+
 
 let dx1, dy1;
+
 
 let labirint = false;
 
@@ -16,44 +21,86 @@ function find_player(screen){
         // {   console.log(row[x]);
             
             if (row[x]=='A')
-                return {x, y};
+                return [x, y];
 
             // console.log(screen);
             // screen[y] = screen[y].substring(0, x) + '@' + screen[y].substring(x+1);
         }
     }
 }
+let way_x = true, way_y = true;
 
-function move_labirint (x, y, x1, x2) {
+function move_labirint (x, y, x1, y1) {
+    let move_x = true,
+        move_y = true,
+        move;
 
+    let ways = check_ways(x, y);
+
+    // if (! way_x) 
+
+        // if (!way_x)
+        
+
+    // if (x=x1) move_x = false;
+    // if (y=y1) move_y = false;
+
+    // if (move_x && move_y ) 
+    min_distance_xy(x, x1, y, y1) ? move_x = false : move_y = false;
+   
+
+    
+
+    if(!move_x) {
+        move = ways.includes('d') ? 'd' : 'u';
+        way_x = true;
+    }
+
+    if(!move_y) {
+        move = ways.includes('d') ? 'd' : 'u';
+        way_y = true; 
+    }
+
+    // if (!move) move = no_way;
+
+    // if(!move) labirint = "";
+
+    return move || " " ;
+    // return move || move_autopilot(x, y, x1, y1) ;
 }
 
-function move_autopilot(x, y, x1, y1, screen) {  
+
+
+function autopilot(x, y, x1, y1) {  
 
     let move ="";
     let ways = ""
    
-    // ways = check_ways(x, y);
+    ways = check_ways(x, y);
+    let dx, dy;
+    if(x!=x1) 
+         dx = (x < x1) ? 'r' : 'l';
+    if(y != y1)
+        dy = (y < y1) ? 'd' : 'u'; 
 
-    let dx = (x < x1) ? 'r' : 'l';
-    let dy = (y < y1) ? 'd' : 'u'; 
+    let move_x = (ways.includes(dx)) ? dx : "";
+    let move_y = (ways.includes(dy)) ? dy : "";
 
-    // move = (ways.includes(dx)) ? dx : "";
+    if (move_y && move_x )
+        move = min_distance_xy(x, x1, y, y1) ? move_x : move_y;
 
-    // move = (ways.includes(dy)) ? dy : ""
+    else  move = (move_x) ? move_x : move_y;
 
-    // if (!move)  move = ways[Math.floor(Math.random()*ways.length)];   
+    if (move) return move
 
-   
+    labirint = true; 
 
-    // let move_x = (ways.includes(dx)) ? dx : "";
-    // let move_y = (ways.includes(dx)) ? dy : "";   
-    // move = ( Math.abs(x - x1) > Math.abs(y - y1)  ) ?  dx : dy;
-
-    return dx
-    
+    return move_labirint (x, y, x1, y1)
 }
 
+function min_distance_xy(x, x1, y, y1) {
+    return Math.abs(x - x1) > Math.abs(y - y1);
+}
 
 
 
@@ -83,43 +130,47 @@ function check_ways(x, y) {
 
 
 function find_diamands (screen) {
-
-    return screen.map((row, y) => {
-        // console.log(row);
-        let all_target = [];
+   let all_target = [];
+    
+    screen.map((row, y) => {
+        // console.log(row);       
 
         for (let x = 0; x < row.length; x++) {
             if (row[x] == '*')
                 all_target.push( {x, y} );
-            else screen[y] = screen[y].substring(0, x) + ' ' + screen[y].substring(x+1);
-        }
-
-        return all_target
+            // else screen[y] = screen[y].substring(0, x) + ' ' + screen[y].substring(x+1);
+        }    
     });  
-    
+    return all_target
+    .map((el) =>  [distance(px, py, el.x, el.y),  el]).sort((a, b) => a[0] - b[0]).map(el => el[1]);    
+}
+
+function distance(x, y, x1, y1) {
+    return Math.abs(x - x1) + Math.abs(y - y1);
 }
 
 
 
 exports.play = function*(cave){
-    screen = cave;
-   
-    
-    // let all_diamands = find_diamands(screen); 
+    screen = cave; 
+
+    let d, move;
 
     while (true){
-         let {x, y} = find_player(screen); //вынести за цикл хранить новые координаты
+        [px, py] = find_player(screen); //вынести за цикл хранить новые координаты
+        if (!d) d=find_diamands(screen)[0];
 
-        if (!dx1) {
-            //выбор точки назначения            
+                 
+       if (d && d.x == px && d.y == py) {
+            // let diamands = find_diamands(screen); 
+            d = find_diamands(screen)[0];
         }
 
-
-
-
+        // [ px_0, py_0] = [px, py];
 
      
-        let move = ( labirint ) ? move_labirint (x, y, 5, 5) : move_autopilot(x, y, 1, 1);
+        // if (d) move = ( labirint ) ? move_labirint (px, py, d.x, d.y) : move_autopilot(px, py, d.x, d.y);
+        let move = (d) ? autopilot(px, py, d.x, d.y) : " ";
 
         yield move;
     }
