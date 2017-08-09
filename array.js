@@ -1,18 +1,21 @@
 let start = new Date();
 
 const screen = [
-'1111111111',
-'111A111111',
-'1111111111',
-'1111111111',
-'1111111111',
-'1110000111',
-'1111111111',
-'1110001111',
-'11111*1111',
+'11111111111111111111',
+'111A1111111111111111',
+'11111111111111111111',
+'11111111111111111111',
+'11111111111111111111',
+'11100001111111111111',
+'11111111111111111111',
+'11111111111111111111',
+'11111*11111111111111',
+'11111111111111111111',
 ]
 console.log('Initial screen');
 console_screen(screen);
+max_x = screen[0].length -1;
+max_y = screen.length -1;
 
 
 // let x = 5,
@@ -20,6 +23,7 @@ console_screen(screen);
 
 //координаты игрока
 let player = find_player(screen);
+
 console.log('player');
 console.log(player);
 
@@ -37,44 +41,54 @@ console.log(distance(player.x, player.y, diamand.x, diamand.y));
 //координаты тупиковой ситуации
 let dead_end =[];
 
-//массив координат текущей преграды
-// let wall  = explore_wall(x, y);
-// console.log(wall);
-//  let left = wall[0]
+
 
  //------navigate map-----------
 
 
 let dist = distance(player.x, player.y, diamand.x, diamand.y);
 
+let route = [];
+
 for (let i = 0; i < dist; i ++) {
+    
     let next={};
     // console.log ('player', player);
 
-    let step = move_autopilot(player.x, player.y, diamand.x, diamand.y, screen);
+    let step = move_autopilot(player.x, player.y, diamand.x, diamand.y);
 
     // console.log( step );
     [next.x, next.y] = next_step(step, player.x, player.y);
 
-    if (!+screen[next.y][next.x])
+    if (screen[next.y][next.x] == 0){
+        route.push(player);
         dead_end.push(next);
+        console.log('player', player);        
+        console.log("next", next);
+
+        // console.log("-------------------");
+        //массив координат текущей преграды
+        let wall  = explore_wall(next.x, next.y); //пердавать две координаты для определния направления
+        console.log(wall);
+
+        // let left  = wall[0] [1],
+        //     right = wall[wall.length - 1] ;             
+
+        // if (screen[left.y + 1][left.x - 1] == 1 ) {
+
+        //  }   
+
+    }
     else 
         marker(next.x, next.y);
-
     player = next;    
 }
 
-
-
-
-// console.log(dist);
 
 //конечное состояние карты
 console.log('Finish screen');
 console_screen(screen);
 console.log( new Date() - start, "ms");
-
-
 
 
 function next_step(step, x, y) {
@@ -87,17 +101,17 @@ function next_step(step, x, y) {
     return [x, y]
 }
 
-
-
 function move_autopilot(x, y, x1, y1, screen) {  
     let move ="";
-    // let ways = possible_ways(x, y)
-    // console.log('ways', ways);
+    let ways = possible_ways(x, y)
+    console.log(y + '| ways', ways);
 
-    let dx = (x < x1) ? 'r' : 'l';
-    let dy = (y < y1) ? 'd' : 'u'; 
+    let move_x = (x < x1) ? 'r' : 'l';
+    let move_y = (y < y1) ? 'd' : 'u'; 
 
-    move = ( Math.abs(x - x1) > Math.abs(y - y1)  ) ?  dx : dy;   
+    move = ( Math.abs(x - x1) > Math.abs(y - y1)  ) ?  move_x : move_y;
+
+    console.log('move', move);  
 
     return move   
 }
@@ -105,38 +119,17 @@ function move_autopilot(x, y, x1, y1, screen) {
 
 function possible_ways(x, y) {
       let ways = '';
+    //   console.log(x, y);
 
-      if (screen [y-1][x] == 1)  ways += 'u';
-      if (screen [y+1][x] == 1)  ways += 'd';
-      if (screen [y][x-1] == 1)  ways += 'l';
-      if (screen [y][x+1] == 1)  ways += 'r';
+      if (y > 0 && !+screen [y-1][x]      == 1)  ways += 'u';
+      if (y < max_y && screen [y+1][x]  == 1)  ways += 'd';
+      if (x > 0 && screen [y][x-1]      == 1)  ways += 'l';
+      if (x < max_x && screen [y][x+1]  == 1)  ways += 'r';
 
       return ways  
 }
 
-
-
-
-//выводит в консоль карту в форматрированном виде  
-function console_screen(screen){
-    for (let y = 0; y < screen.length; y++)
-    {  
-        let row = screen[y];
-        let row_space = "";
-        for (let x = 0; x < row.length; x++) {
-            row_space += " " + row[x]
-        }
-        console.log(row_space);
-    }
-}
-
-
-
-
-
-// let left = wall[0];
-
-
+//определяет габариты препятсвия
 function explore_wall(x, y) {
     const wall = [];
     let row = screen[y];
@@ -154,6 +147,12 @@ function explore_wall(x, y) {
         // console.log('cell: ' + cell);
         if (cell == 0)
             wall.push([i, { x: i, y }])
+    }
+
+
+
+    for (let i = 0; i < wall.length; i++ ) {
+        
     }
 
     return wall.sort((a, b) => a[0] - b[0])
@@ -212,11 +211,21 @@ function distance(x, y, x1, y1) {
     return Math.abs(x - x1) + Math.abs(y - y1);
 }
 
-
-
-
-
 function marker(x ,y, s = '.') {
     screen[y] = screen[y].substring(0, x) + s + screen[y].substring(x+1);
+}
+
+
+//выводит в консоль карту в форматрированном виде  
+function console_screen(screen){
+    for (let y = 0; y < screen.length; y++)
+    {  
+        let row = screen[y];
+        let row_space = y +"|";
+        for (let x = 0; x < row.length; x++) {
+            row_space += " " + row[x]
+        }
+        console.log(row_space);
+    }
 }
 
