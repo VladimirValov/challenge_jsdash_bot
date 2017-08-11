@@ -1,4 +1,4 @@
-const cave = [
+const cave_default = [
         "########################################",
         "#:: : :::/ + :+::+::: :+++ +:  +++:: :+#",
         "# :*+:* :  +::: ::: :: : ::+:+ :++::: :#",
@@ -22,20 +22,20 @@ const cave = [
         "#::++: :+:: ::: :*::::::*:A:  ::: :+:* #",
         "########################################"
     ];
-    console.log('cave');
-    console.log(cave);
+    // console.log('cave');
+    // console.log(cave);
 
-    screen_mapping(cave);
-
-
+//  screen_mapping(cave);
 
 
-exports.screen_mapping =  screen_mapping;
 
-function screen_mapping (cave)  {
+
+module.exports.screen_mapping = function (cave = cave_default)  {
 
     let screen = [];    
     let bflys = [];     //array buterfly  
+
+    console.log(cave);
 
 
     //convert cave to array screen
@@ -149,6 +149,9 @@ function screen_mapping (cave)  {
         row = screen[y].join("");
         console.log(row);
     }
+
+
+    return screen;
 
 
 

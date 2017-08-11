@@ -104,14 +104,14 @@ function next_step(step, x, y) {
 function move_autopilot(x, y, x1, y1, screen) {  
     let move ="";
     let ways = possible_ways(x, y)
-    console.log(y + '| ways', ways);
+    // console.log(y + '| ways', ways);
 
     let move_x = (x < x1) ? 'r' : 'l';
     let move_y = (y < y1) ? 'd' : 'u'; 
 
     move = ( Math.abs(x - x1) > Math.abs(y - y1)  ) ?  move_x : move_y;
 
-    console.log('move', move);  
+    // console.log('move', move);  
 
     return move   
 }
@@ -228,4 +228,58 @@ function console_screen(screen){
         console.log(row_space);
     }
 }
+// { x: 3, y: 5 }
+ explore_block(3, 5);
 
+//выводит в консоль карту в форматрированном виде  
+function console_screen(screen){
+    for (let y = 0; y < screen.length; y++)
+    {  
+        let row = screen[y];
+        let row_space = y +"|";
+        for (let x = 0; x < row.length; x++) {
+            row_space += " " + row[x]
+        }
+        console.log(row_space);
+    }
+}
+
+
+//определяет габариты препятсвия
+function explore_block(x, y) {
+   ///// Mapping baterfly
+    console.log('Mapping baterfly');  
+
+    let wall = [{x, y}];
+    
+
+    for (i = 0; i < wall.length; i++) {
+        let b = wall[i];
+        console.log(b);        
+        console.log(screen[b.y][b.x]);
+        screen[b.y][b.x] = 8;
+
+        // if ( screen[b.y][b.x+1] == 0)    {
+        //     wall.push({x : b.x + 1, y: b.y})
+        //     // screen[b.y][b.x+1] = '+'
+        // }
+        // if ( screen[b.y][b.x-1]   == 0)    {
+
+        //     wall.push({x : b.x - 1, y: b.y})
+        //     // screen[b.y][b.x-1] = '+'
+        // }
+        // if ( screen[b.y+1][b.x] == 0 )    {
+        //     wall.push({x : b.x, y: b.y + 1})
+        //     // screen[b.y+1][b.x] = '+'
+        // }
+        // if ( screen[b.y-1][b.x] == 0)    {
+        //     wall.push({x : b.x, y: b.y - 1})
+        //     // screen[b.y-1][b.x] == '+';
+        // } 
+
+    }     
+    console.log("Найдено клеток с бабочками: " + wall.length);
+}
+
+
+console_screen(screen);
