@@ -11,3 +11,6 @@ node jsdash.js --ai=submission.js --log=log.json --force --freq-brick=5 --freq-s
 
 node jsdash.js --ai=submission.js --log=log.json --force --freq-space=25 --freq-dirt=50 --butterflies=3 --freq-diamond=5 --freq-brick=20 --seed=1795109067
 
+
+ seed 507000591 сразу тупик
+

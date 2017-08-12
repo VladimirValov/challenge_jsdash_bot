@@ -66,7 +66,7 @@ module.exports.screen_mapping = function (cave = cave_default)  {
 
         for(x = 1; x < row.length - 1; x++) {
  
-            if(row[x] == ' ' || row[x] == '*' || row[x] == ":") {
+            if(row[x] == ' ' || row[x] == ":") {
                 let tupik = 0;
                 if ( row[x+1] == '+' || row[x+1] == '#' ) tupik ++;
                 if ( row[x-1] == '+' || row[x-1] == '#' ) tupik ++;
