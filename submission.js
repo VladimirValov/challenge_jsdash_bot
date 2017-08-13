@@ -21,26 +21,41 @@ let target = find_diamands(screen)[0];
 let checkpoints = []; //промежуточные точки обхода препятсвий
 let point; // промежуточная точка
 
-for (i = 0; i < 68; i++) {
+for (let i = 0; i < 300; i++) {
+console.log(i);
+
     console.log(cave);
     print_screen()    
-    console.log('player, target', 'checkpoints'); 
-    console.log(player, target, checkpoints); 
+    console.log('player, target'); 
+    console.log(player, target); 
+    console.log('point, checkpoints'); 
+    console.log(point, checkpoints); 
+
     let step;
 
-    if (!checkpoints.length) {
+    if (!point && checkpoints.length) {
+        console.log('point, checkpoints'); 
+        console.log(point, checkpoints); 
+        point = checkpoints.pop()
+    }
+
+    if (!point) {
         step = autopilot(player, target)
     }
-    else {
-        if (!point) point = checkpoints.pop()
 
-        if( player.x == point.x && player.y == point.y) { 
-            console.log("checkpoints finish")
+    else {     
+
+        if (player.x == point.x && player.y == point.y) { 
+            console.log("checkpoints finish");
             point = 0;
-            step = autopilot(player, target);
-         } 
+            point = checkpoints.pop()
+            console.log('point, checkpoints'); 
+            console.log(point, checkpoints); 
+            
+            // step = autopilot(player, target);
+         }
             // throw new Error(step);
-         step = (point) ? autopilot(player, point) : autopilot(player, target);
+        step = (point) ? autopilot(player, point) : autopilot(player, target);
     } 
         
 
@@ -148,17 +163,17 @@ function autopilot(a, b) {
         screen[u.y][u.x] = 'u';
         screen[d.y][d.x] = 'd';
 
-        print_screen();
+        // print_screen();
 
         wall.forEach(brick => {
             screen[brick.y][brick.x] = '+';
         })
 
-        l = (l.x > 1) ? next_step('l', l) : {x: 100, y: 100} 
-        r = (r.x < screen[0].length - 2) ? next_step('r', r) : {x: 100, y: 100}
+        l = (l.x > 1) ? next_step('l', l) : {x: -100, y: l.y} 
+        r = (r.x < screen[0].length - 2) ? next_step('r', r) : {x: 100, y: r.y}
 
-        u = (u.y > 1 ) ? next_step('u', u) : {x: 100, y: 100};
-        d = (d.y < screen.length - 2) ? next_step('d', d) : {x: 100, y: 100}
+        u = (u.y > 1 ) ? next_step('u', u) : {x: u.x, y: -100};
+        d = (d.y < screen.length - 2) ? next_step('d', d) : {x: d.x, y: 100}
 
         console.log ("--- l, r, u, d");
         console.log (l, r, u, d);
@@ -173,6 +188,8 @@ function autopilot(a, b) {
         let direction = min_distance_xy(a, b) ? dx : dy;
         // let bypass_y = (distance(a, u) < distance(a, d)) ? 'u' : 'd'
         console.log('direction = ', direction);
+
+        // let checkpoints = []
 
         if (direction == 'r' || direction == 'l') {
 
@@ -199,7 +216,7 @@ function autopilot(a, b) {
         
         console.log(checkpoints)   
         
-        return checkpoints;
+        if (checkpoints.length) return checkpoints;
 
         throw new Error('Тупик');
     }

@@ -74,7 +74,7 @@ module.exports.screen_mapping = function (cave = cave_default)  {
                 if ( screen[y-1][x] == '+' || screen[y-1][x] == '#') tupik ++;
                 
                 if (tupik > 2) {
-                    row[x] = 8;
+                    row[x] = '+';
                     count ++;
                 }                
             }          
@@ -86,42 +86,42 @@ module.exports.screen_mapping = function (cave = cave_default)  {
 
 
 
-    ///// Mapping baterfly
-    console.log('Mapping baterfly');  
+    // ///// Mapping baterfly
+    // console.log('Mapping baterfly');  
 
-    for(i = 0; i < bflys.length; i++) {
-        b = bflys[i];
+    // for(i = 0; i < bflys.length; i++) {
+    //     b = bflys[i];
 
-        if ( screen[b.y][b.x+1] == ' ')    {
-            bflys.push({x : b.x + 1, y: b.y})
-            screen[b.y][b.x+1] = '/'
-        }
-        if ( screen[b.y][b.x-1]   == ' ')    {
-            bflys.push({x : b.x - 1, y: b.y})
-            screen[b.y][b.x-1] = '/'
-        }
-        if ( screen[b.y+1][b.x] == ' ' )    {
-            bflys.push({x : b.x, y: b.y + 1})
-            screen[b.y+1][b.x] = '/'
-        }
-        if ( screen[b.y-1][b.x] == ' ')    {
-            bflys.push({x : b.x, y: b.y - 1})
-            screen[b.y-1][b.x] == '/';
-        } 
+    //     if ( screen[b.y][b.x+1] == ' ')    {
+    //         bflys.push({x : b.x + 1, y: b.y})
+    //         screen[b.y][b.x+1] = '/'
+    //     }
+    //     if ( screen[b.y][b.x-1]   == ' ')    {
+    //         bflys.push({x : b.x - 1, y: b.y})
+    //         screen[b.y][b.x-1] = '/'
+    //     }
+    //     if ( screen[b.y+1][b.x] == ' ' )    {
+    //         bflys.push({x : b.x, y: b.y + 1})
+    //         screen[b.y+1][b.x] = '/'
+    //     }
+    //     if ( screen[b.y-1][b.x] == ' ')    {
+    //         bflys.push({x : b.x, y: b.y - 1})
+    //         screen[b.y-1][b.x] == '/';
+    //     } 
 
-    }     
-    console.log("Найдено клеток с бабочками: " + bflys.length);
+    // }     
+    // console.log("Найдено клеток с бабочками: " + bflys.length);
 
     
 
-    //делаем изгородь вокруг бабочки 
-    console.log("Building a fence around butterflies");
-    bflys.forEach(b => {
-        screen[b.y][b.x+1] = '/'
-        screen[b.y][b.x-1] = '/'
-        screen[b.y+1][b.x] = '/'
-        screen[b.y-1][b.x] = '/'
-    })
+    // // делаем изгородь вокруг бабочки 
+    // console.log("Building a fence around butterflies");
+    // bflys.forEach(b => {
+    //     screen[b.y][b.x+1] = '/'
+    //     screen[b.y][b.x-1] = '/'
+    //     screen[b.y+1][b.x] = '/'
+    //     screen[b.y-1][b.x] = '/'
+    // })
 
     
     

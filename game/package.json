@@ -2,5 +2,8 @@
     "dependencies": {
         "random-js": "1.0.8",
         "node-getopt": "0.2.3"
+    },
+    "scripts": {
+        "run": "node jsdash.js --ai=submission.js --log=log.json --force --freq-space=25 --freq-dirt=50 --butterflies=3 --freq-diamond=5 --freq-brick=20" 
     }
 }
