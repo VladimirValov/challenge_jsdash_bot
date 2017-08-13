@@ -21,6 +21,8 @@ let target = find_diamands(screen)[0];
 let checkpoints = []; //промежуточные точки обхода препятсвий
 let point; // промежуточная точка
 
+
+
 for (let i = 0; i < 300; i++) {
 console.log(i);
 
