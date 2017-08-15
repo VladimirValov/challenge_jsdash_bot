@@ -1,5 +1,74 @@
 'use strict'; /*jslint node:true*/
 
+
+class Rat {
+    constructor(src) {
+        this.src = src;
+        this.point = src.player;
+        this.route = "";
+    }
+    find_exit() {
+        let direction = this.src.direction,
+            rat1_point = this.point,
+            rat2_point = this.point,
+            s1 = 'ruldruld',
+            s2 = 'rdlurdlu',
+            route_1 = "",
+            route_2 = "",
+            step = "",            
+            i = s1.indexOf(direction),
+            j = s2.indexOf(direction),            
+            coordinate = (direction == 'r' || direction == 'l') ? 'x' : 'y',
+            brick = this.src.udlr_to_xy(direction, this.point);
+            brick = this.src.udlr_to_xy(direction, brick);
+
+
+
+
+            if (direction == 'r' || direction == 'l') {
+                
+            }
+        console.log("Крыса ищет выход")
+        
+        while( (rat1_point[coordinate] != brick[coordinate] || rat1_point == this.point) &&
+               (rat2_point[coordinate] != brick[coordinate] || rat2_point == this.point) ) 
+        {   
+            //rat1         
+            if (i == 0) i = 4
+            if (i == 7) i = 3
+            step = this.src.check_step(s1[i], rat1_point);
+            console.log('step', step);
+            if (step) {
+                rat1_point = this.src.udlr_to_xy(step, rat1_point);
+                route_1 +=step; 
+                i--;
+            }
+            else i++
+
+            //rat2
+            if (j == 0) j = 4
+            if (j == 7) j = 3
+            step = this.src.check_step(s2[j], rat2_point);
+            console.log('step', step);
+            if (step) {
+                rat2_point = this.src.udlr_to_xy(step, rat2_point);
+                route_2 +=step; 
+                j--;
+            }
+            else j++  
+        }
+        console.log(route_1); 
+        console.log(route_2); 
+        this.route = (rat1_point[coordinate] == this.point[coordinate]) ? route_1 : route_2; 
+        console.log(this.route);
+
+        return this.route.split("").reverse();
+    }
+}
+
+
+
+
 class Screen {
     constructor() {
         this.direction = "";
@@ -65,7 +134,7 @@ class Screen {
         //желаемое направление
         this.direction = (max_distance_xy) ? direction_x : direction_y; 
 
-        let step_x = (direction_xpqppq) ? this.check_step(direction_x) : ""
+        let step_x = (direction_x) ? this.check_step(direction_x) : ""
         let step_y = (direction_y) ? this.check_step(direction_y) : ""  
         console.log( `step_x = ${step_x}  step_y = ${step_y}`);
            
@@ -79,7 +148,7 @@ class Screen {
 
         // if you hier => dead end
 
-       //попытка обхода одиночного блока       
+    //    попытка обхода одиночного блока       
        this.steps_bypass =  this.single_bypass(this.direction)
         console.log('this.single_bypass(this.direction)', this.steps_bypass );
         
@@ -88,7 +157,9 @@ class Screen {
        
        console.log("ТУПИК!!! Выпускай крысу!!!");
 
-       this.rat_run();
+       this.steps_bypass = this.rat_run();
+
+       if (this.steps_bypass) return this.steps_bypass.pop();
 
 
     //    throw new Error ("ТУПИК!!! Выпускай крысу!!!");
@@ -97,15 +168,23 @@ class Screen {
         
     }
     check_step(direction, point = this.player) {
-        let {x, y} = this.udlr_to_xy(direction, point);       
+        let {x, y} = this.udlr_to_xy(direction, point),
+            step = (' :*'.includes(this.screen[y][x]) &&
+                !(y > 0 && this.screen[y-1][x] == 'O' && this.screen[y][x] == ' ') ) ? direction : "";   
+            
+            for(let i = -1; i < 2; i++) {
+                for(let j = -1; j < 2; j++) {
+                    if(y > 0 && '/|\\-'.includes(this.screen[y+i][x+j]))
+                        step = "";
+                }
+            }
         
-        return (' :*'.includes(this.screen[y][x])) ? direction : ""
+        return step;
     } 
     rat_run() {
-        let right   = ['r', 'd'],
-            down    = ['d', 'l'],
-            left    = ['l', 'u'],
-            up      = ['u', 'r'];        
+        console.log("Крыса на старте!!!")            
+        let rat = new Rat(this);  
+        return rat.find_exit(); 
     }
     single_bypass(direction) {
 
@@ -201,7 +280,7 @@ exports.play = function*(screen){
 
 
 
-
+//for test
 
 
 if (0) {
@@ -211,7 +290,7 @@ if (0) {
 
     let src = new Screen(screen);
 
-    for(let i = 0; i < 4; i++) {
+    for(let i = 0; i < 1; i++) {
         src.update(screen);
         src.log_screen();
         src.log_player();   
