@@ -1,14 +1,16 @@
 'use strict'; /*jslint node:true*/
 
 class Screen {
-    constructor(screen) {
+    constructor() {
+        this.direction = "";
+        this.steps_bypass = "";
+    }
+    update(screen) {
         this.screen = screen.map(el => el.split(""));
         this.player = this.find('A');
         this.diamands = this.find('*', 'all')
         this.nearby_diamand = this.find_nearby_diamand();
-        this.direction = "";
         this.step = this.navigate()
-        this.steps_bypass = "";
     }
     find(s, option) { 
         let arr = []
@@ -46,7 +48,10 @@ class Screen {
     navigate(target = this.nearby_diamand) {
         if (!target) return "";
         
-        if(this.steps_bypass) return this.steps_bypass.pop();
+        if(Array.isArray(this.steps_bypass) && this.steps_bypass.length) {    
+           
+            return this.steps_bypass.pop();
+        }
             
         let max_distance_xy = this.distance_x(this.player, target) > this.distance_y(this.player, target);
 
@@ -60,22 +65,23 @@ class Screen {
         //желаемое направление
         this.direction = (max_distance_xy) ? direction_x : direction_y; 
 
-        let step_x = (direction_x) ? this.check_step(direction_x) : ""
+        let step_x = (direction_xpqppq) ? this.check_step(direction_x) : ""
         let step_y = (direction_y) ? this.check_step(direction_y) : ""  
+        console.log( `step_x = ${step_x}  step_y = ${step_y}`);
            
         if (step_x && step_y)
             return (max_distance_xy) ? step_x : step_y;
         
         if (step_x || step_y)
             return (step_x) ? step_x : step_y;
-        // console.log( `step_x = ${step_x}  step_y = ${step_y}`);
-        // console.log( `direction_x = ${direction_x}  direction_y = ${direction_y} direction = ${this.direction}`);
+        console.log( `step_x = ${step_x}  step_y = ${step_y}`);
+        console.log( `direction_x = ${direction_x}  direction_y = ${direction_y} direction = ${this.direction}`);
 
         // if you hier => dead end
 
        //попытка обхода одиночного блока       
        this.steps_bypass =  this.single_bypass(this.direction)
-        // console.log('this.single_bypass(this.direction)', this.steps_bypass );
+        console.log('this.single_bypass(this.direction)', this.steps_bypass );
         
        if (this.steps_bypass) return this.steps_bypass.pop();
 
@@ -85,7 +91,7 @@ class Screen {
        this.rat_run();
 
 
-       throw new Error ("ТУПИК!!! Выпускай крысу!!!");
+    //    throw new Error ("ТУПИК!!! Выпускай крысу!!!");
 
        return " "
         
@@ -179,11 +185,10 @@ class Screen {
 
 
 exports.play = function*(screen){
-    // let src = new Screen(screen);
+    let src = new Screen();
 
-    while (true){
-        let src = new Screen(screen);
-
+    while (true){       
+        src.update(screen); 
         // let step = pilot(screen);        
         
         yield src.step;
@@ -201,31 +206,20 @@ exports.play = function*(screen){
 
 if (0) {
 
-const { cave } = require('./../cave') ;
-let screen = cave;
+    const { cave } = require('./../cave') ;
+    let screen = cave;
 
-pilot(screen);
-
-
-
-
-function pilot(screen) {
     let src = new Screen(screen);
 
-    src.log_screen();
-    src.log_player();   
-    console.log( "src.nearby_diamand", src.nearby_diamand )    
-    console.log( src.direction )
-    console.log( src.steps_bypass )
-    
+    for(let i = 0; i < 4; i++) {
+        src.update(screen);
+        src.log_screen();
+        src.log_player();   
+        console.log( "src.nearby_diamand", src.nearby_diamand )    
+        console.log( src.direction )
+        console.log( 'src.step =' + src.step )
+        console.log( 'src.steps_bypass =' + src.steps_bypass )
+    }
 
-    // console.log(src.get_posible_step())
-
-    // return src.navigate();   
-
-        // if(!step) throw new Error(" Avtopilot dont work ")
-
-}
-
-
+// if(!step) throw new Error(" Avtopilot dont work ")
 }
