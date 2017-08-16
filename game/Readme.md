@@ -1,3 +1,13 @@
+* Choose the nearest diamond.
+* Calculate the distance in X and Y.
+* Move to the goal.
+
+* If the obstacle is a single running it.
+* If not then release the two rats which avoid obstacles and find the shortest path  to the edge.
+* Not implemented as it should check the falling rocks and butterflies.
+
+**Rats should be trained better.**
+
 
 node jsdash.js --ai=submission.js --log=log.json --force --freq-space=1 --freq-dirt=3
 
