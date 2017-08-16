@@ -9,8 +9,8 @@ class Rat {
     }
     find_exit() {
         let direction = this.src.direction,
-            rat1_point = this.point,
-            rat2_point = this.point,
+            rat1 = this.point,
+            rat2 = this.point,
             s1 = 'ruldruld',
             s2 = 'rdlurdlu',
             route_1 = "",
@@ -21,25 +21,46 @@ class Rat {
             coordinate = (direction == 'r' || direction == 'l') ? 'x' : 'y',
             brick = this.src.udlr_to_xy(direction, this.point);
             brick = this.src.udlr_to_xy(direction, brick);
-
-
-
-
-            if (direction == 'r' || direction == 'l') {
-                
+            // console.log('this.direction', direction);
+            // console.log('coordinate', coordinate);
+            // console.log('brick[coordinate]', brick)
+            // console.log('this.point[coordinate]', this.point)
+    
+            if (!' :*'.includes(this.src.screen[brick.y][brick.x])) {
+                console.log("В целевой точке камень");
+                let dir = ""
+                if (direction == 'r' || direction == 'l') {
+                    dir = (' :*'.includes(this.src.screen[brick.y + 1][brick.x])) ? 'd' : "";
+                    // console.log('direction',direction ,'dir', dir);    
+                    if(!dir) dir = (!dir && ' :*'.includes(this.src.screen[brick.y - 1][brick.x])) ? 'u' : "" ;  
+                    // console.log('direction',direction ,'dir', dir);          
+                }
+                if (direction == 'u' || direction == 'd') {
+                    dir = (' :*'.includes(this.src.screen[brick.y][brick.x - 1])) ? 'l' : "";
+                    // console.log('direction',direction ,'dir', dir); 
+                    if(!dir) dir = (' :*'.includes(this.src.screen[brick.y][brick.x + 1])) ? 'r' : "";    
+                    // console.log( 'l' ,' :*'.includes(this.src.screen[brick.y][brick.x - 1]) );
+                    // console.log('r' ,' :*'.includes(this.src.screen[brick.y][brick.x + 1]) );
+                    // console.log('direction',direction ,'dir', dir);                 
+                }
+                if (dir) brick = this.src.udlr_to_xy(dir, brick);
+                        // console.log('this.direction', dir);
+                    // console.log('coordinate', coordinate);
+                    // console.log('brick[coordinate]', brick)
+                    // console.log('this.point[coordinate]', this.point)
             }
-        console.log("Крыса ищет выход")
+        // console.log("Крыса ищет выход")
         
-        while( (rat1_point[coordinate] != brick[coordinate] || rat1_point == this.point) &&
-               (rat2_point[coordinate] != brick[coordinate] || rat2_point == this.point) ) 
+        while( ( !(rat1.x == brick.x && rat1.y == brick.y) || rat1 == this.point) &&
+               ( !(rat2.x == brick.x && rat2.y == brick.y) || rat2 == this.point) ) 
         {   
             //rat1         
             if (i == 0) i = 4
             if (i == 7) i = 3
-            step = this.src.check_step(s1[i], rat1_point);
+            step = this.src.check_step(s1[i], rat1);
             console.log('step', step);
             if (step) {
-                rat1_point = this.src.udlr_to_xy(step, rat1_point);
+                rat1 = this.src.udlr_to_xy(step, rat1);
                 route_1 +=step; 
                 i--;
             }
@@ -48,20 +69,23 @@ class Rat {
             //rat2
             if (j == 0) j = 4
             if (j == 7) j = 3
-            step = this.src.check_step(s2[j], rat2_point);
-            console.log('step', step);
+            step = this.src.check_step(s2[j], rat2);
+            // console.log('step', step);
             if (step) {
-                rat2_point = this.src.udlr_to_xy(step, rat2_point);
+                rat2 = this.src.udlr_to_xy(step, rat2);
                 route_2 +=step; 
                 j--;
             }
-            else j++  
+            else j++;  
+        //    console.log('rat1', rat1 )
+        //    console.log('rat2', rat2 )
         }
-        console.log(route_1); 
-        console.log(route_2); 
-        this.route = (rat1_point[coordinate] == this.point[coordinate]) ? route_1 : route_2; 
-        console.log(this.route);
-
+        // console.log(route_1); 
+        // console.log(route_2); 
+        // console.log(rat1[coordinate], this.point[coordinate]);
+        // console.log(rat1.x == brick.x && rat1.y == brick.y);
+        this.route = (rat1.x == brick.x && rat1.y == brick.y) ? route_1 : route_2; 
+        // console.log(this.route);
         return this.route.split("").reverse();
     }
 }
@@ -80,6 +104,7 @@ class Screen {
         this.diamands = this.find('*', 'all')
         this.nearby_diamand = this.find_nearby_diamand();
         this.step = this.navigate()
+        this.player_prev = ""
     }
     find(s, option) { 
         let arr = []
@@ -98,9 +123,12 @@ class Screen {
         return arr;
     }
     find_nearby_diamand() {
-        if (this.diamands.length)
+        if (this.diamands.length) {
             this.diamands.sort((a, b) => this.distance(this.player, a) - this.distance(this.player, b) );
-        return this.diamands[0];
+            return (this.player_prev != this.player) ? this.diamands[0] : this.diamands[1];
+        }
+        return this.player;
+
     } 
     distance(a, b) {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
@@ -116,6 +144,7 @@ class Screen {
     } 
     navigate(target = this.nearby_diamand) {
         if (!target) return "";
+        this.player_prev = this.player;
         
         if(Array.isArray(this.steps_bypass) && this.steps_bypass.length) {    
            
@@ -136,45 +165,43 @@ class Screen {
 
         let step_x = (direction_x) ? this.check_step(direction_x) : ""
         let step_y = (direction_y) ? this.check_step(direction_y) : ""  
-        console.log( `step_x = ${step_x}  step_y = ${step_y}`);
+        // console.log( `step_x = ${step_x}  step_y = ${step_y}`);
            
-        if (step_x && step_y)
-            return (max_distance_xy) ? step_x : step_y;
+        if (step_x && step_y) return (max_distance_xy) ? step_x : step_y;
         
-        if (step_x || step_y)
-            return (step_x) ? step_x : step_y;
-        console.log( `step_x = ${step_x}  step_y = ${step_y}`);
-        console.log( `direction_x = ${direction_x}  direction_y = ${direction_y} direction = ${this.direction}`);
+        if (step_x || step_y) return (step_x) ? step_x : step_y;
+        // console.log( `step_x = ${step_x}  step_y = ${step_y}`);
+        // console.log( `direction_x = ${direction_x}  direction_y = ${direction_y} direction = ${this.direction}`);
 
         // if you hier => dead end
 
     //    попытка обхода одиночного блока       
        this.steps_bypass =  this.single_bypass(this.direction)
-        console.log('this.single_bypass(this.direction)', this.steps_bypass );
+        // console.log('this.single_bypass(this.direction)', this.steps_bypass );
         
-       if (this.steps_bypass) return this.steps_bypass.pop();
-
-       
-       console.log("ТУПИК!!! Выпускай крысу!!!");
+       if (this.steps_bypass) return this.steps_bypass.pop();       
+    //    console.log("ТУПИК!!! Выпускай крысу!!!");
 
        this.steps_bypass = this.rat_run();
 
        if (this.steps_bypass) return this.steps_bypass.pop();
 
-
     //    throw new Error ("ТУПИК!!! Выпускай крысу!!!");
-
-       return " "
-        
+       return " "        
     }
     check_step(direction, point = this.player) {
         let {x, y} = this.udlr_to_xy(direction, point),
             step = (' :*'.includes(this.screen[y][x]) &&
-                !(y > 0 && this.screen[y-1][x] == 'O' && this.screen[y][x] == ' ') ) ? direction : "";   
+                !(y > 0 && this.screen[+y-1][x] == 'O' && this.screen[y][x] == ' ') ) ? direction : "";   
             
-            for(let i = -1; i < 2; i++) {
-                for(let j = -1; j < 2; j++) {
-                    if(y > 0 && '/|\\-'.includes(this.screen[y+i][x+j]))
+            for(let y = this.point - 1; y < this.point + 1; y++) {
+                let row = screen[y]
+                for(let x = this.point - 1; x < this.point +1; x++) {
+                    // console.log(this.screen.length);
+                    // console.log(this.screen[0].length);
+                    // console.log(this.screen[y+i]);
+                    // console.log(`this.screen[${y+i}][${x+j}]`)
+                    if ('/|\\-'.includes(row[x]))
                         step = "";
                 }
             }
@@ -182,7 +209,7 @@ class Screen {
         return step;
     } 
     rat_run() {
-        console.log("Крыса на старте!!!")            
+        // console.log("Крыса на старте!!!")            
         let rat = new Rat(this);  
         return rat.find_exit(); 
     }
@@ -194,10 +221,9 @@ class Screen {
 
         //точки слева и справа от препятсвия    
         if(!left_bypass && !right_bypass) {
-            console.log( "This is not single brick");
+            // console.log( "This is not single brick");
             return "";
-        }            
-
+        } 
         //проеверям две соседние точки у препятсвия
         if (direction == 'd' || direction == 'u') {
             left_bypass  += this.check_step('l', brick) + this.check_step('dl', brick);
@@ -211,7 +237,6 @@ class Screen {
                 ? right_bypass = (direction == 'd') ? ['d', 'd', 'r'] : ['u', 'u', 'r'] 
                 : "";
         }
-
          if (direction == 'l' || direction == 'r') {
             left_bypass  += this.check_step('u', brick) + this.check_step('ur', brick);
             right_bypass += this.check_step('d', brick) + this.check_step('dl', brick) ;
@@ -224,7 +249,6 @@ class Screen {
                 ? (direction == 'r') ? ['r', 'r', 'd'] : ['l', 'l', 'd']
                 : "";
         }
-
         // console.log('left_bypass', left_bypass, 'right_bypass', right_bypass)
         if (left_bypass)    return left_bypass;
         if (right_bypass)   return right_bypass
@@ -261,20 +285,14 @@ class Screen {
 }
 
 
-
-
 exports.play = function*(screen){
     let src = new Screen();
 
     while (true){       
-        src.update(screen); 
-        // let step = pilot(screen);        
-        
+        src.update(screen);        
         yield src.step;
     }
 };
-
-
 
 
 
@@ -284,10 +302,8 @@ exports.play = function*(screen){
 
 
 if (0) {
-
     const { cave } = require('./../cave') ;
     let screen = cave;
-
     let src = new Screen(screen);
 
     for(let i = 0; i < 1; i++) {
@@ -299,6 +315,5 @@ if (0) {
         console.log( 'src.step =' + src.step )
         console.log( 'src.steps_bypass =' + src.steps_bypass )
     }
-
 // if(!step) throw new Error(" Avtopilot dont work ")
 }
