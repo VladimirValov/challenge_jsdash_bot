@@ -27,3 +27,6 @@ node jsdash.js --ai=submission.js --log=log.json --force --freq-brick=10 --freq-
 
  seed 507000591 сразу тупик
 
+удачный
+node jsdash.js --ai=submission.js --log=log.json --force  --in-process --butterflies=0 --seed=1310148788
+node jsdash.js --ai=submission.js --log=log.json --force  --in-process --butterflies=0 --seed=1310148789

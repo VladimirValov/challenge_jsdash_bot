@@ -97,41 +97,121 @@ class Rat {
 
 class Screen {
     constructor(screen) {
+        this.player = "";    
+        this.diamands = [];
+        this.butterfly = [];    
+        this.screen = this.mapping_screen(screen);
         this.direction = "";
         this.steps_bypass = "";
-        this.screen = screen.map(el => el.split(""));        
+        this.fearless = false;   // switch mapping butterfly
     }
     update(screen) {
-        if(screen) this.screen = screen.map(el => el.split(""));
-        this.player = this.find('A');
-        this.diamands = this.find('*', 'all')
+        if (screen) this.screen = this.mapping_screen(screen);
+        this.find_player_thing();
         this.nearby_diamand = this.find_nearby_diamand();
         this.step = this.navigate()
         this.player_prev = ""
     }
-    find(s, option) { 
-        let arr = []
+    mapping_screen(screen) {
+        let world = screen.map(el => el.split(""));
 
-        for(let y = 1; y < this.screen.length - 1; y++ ) {
-            let row = this.screen[y];
-            for(let x = 1; x < row.length - 1; x ++) {
-                if (row[x] == s) {
-                    // console.log(`find "${s}": x = ${x} y = ${y}`);
-                    
-                    if (option != 'all') return {x, y}
-                    arr.push({x, y});
+        if (!this.fearless)  world = this.guard_butterfly(world);
+
+        return world;
+    }
+    guard_butterfly(screen) {  
+            // ///// Mapping baterfly
+        let bflys = this.butterfly      
+        
+        // console.log("map butterfly")
+        for (let y = 1; y < screen.length - 1; y ++ ) {
+            let row = screen[y];
+            for (let x = 1; x < row.length -1; x ++) {
+                if (row[x] == 'A') this.player = {x, y};
+
+                if ('/|\\-'.includes(row[x]) ) {
+                    this.butterfly.push({x, y});
+                // console.log(row[x]);                    
                 }
-            }            
+            }
         }
-        return arr;
+
+        for(let i = 0; i < bflys.length; i++) {
+            let b = bflys[i];
+
+            if ( screen[b.y][b.x+1] == ' ')    {
+                bflys.push({x : b.x + 1, y: b.y})
+                screen[b.y][b.x+1] = '/'
+            }
+            if ( screen[b.y][b.x-1]   == ' ')    {
+                bflys.push({x : b.x - 1, y: b.y})
+                screen[b.y][b.x-1] = '/'
+            }
+            if ( screen[b.y+1][b.x] == ' ' )    {
+                bflys.push({x : b.x, y: b.y + 1})
+                screen[b.y+1][b.x] = '/'
+            }
+            if ( screen[b.y-1][b.x] == ' ')    {
+                bflys.push({x : b.x, y: b.y - 1})
+                screen[b.y-1][b.x] == '/';
+            } 
+        }     
+    // console.log("Найдено клеток с бабочками: " + bflys.length);   
+
+    // // делаем изгородь вокруг бабочки 
+
+        bflys.forEach(b => {
+            screen[b.y][b.x+1] = '/'
+            screen[b.y][b.x-1] = '/'
+            screen[b.y+1][b.x] = '/'
+            screen[b.y-1][b.x] = '/'
+        })
+    // this.log_screen(screen);
+    // console.log(this.butterfly)
+
+    return screen;
+    }
+    find_player_thing() { 
+        this.diamands = [];
+        this.butterfly = [];
+        let world = this.screen;
+
+        // this.log_screen();
+
+        for (let y = 1; y < world.length - 1; y ++ ) {
+            let row = world[y];
+            for (let x = 1; x < row.length -1; x ++) {
+                
+                if (row[x] == 'A') this.player = {x, y};
+
+                if (row[x] == '*') this.diamands.push({x, y})
+                
+                if (this.fearless && '/|\\-'.includes(row[x]) ) {
+                    this.butterfly.push({x, y});
+                // console.log(row[x]);                    
+                }
+            }
+        }
+        
+        if (!this.fearless && this.butterfly.length) {
+            this.butterfly.forEach(el => {
+                if (el.x == this.player.x && el.y == this.player.y) this.fearless = true;
+            } )
+        }
     }
     find_nearby_diamand() {
         if (this.diamands.length) {
-            this.diamands.sort((a, b) => this.distance(this.player, a) - this.distance(this.player, b) );
-            return (this.player_prev != this.player) ? this.diamands[0] : this.diamands[1];
-        }
-        return this.player;
+            this.diamands.sort((a, b) => this.distance(this.player, b) - this.distance(this.player, a) );
+            //  console.log(this.diamands[0]);
 
+            let target = this.diamands.pop();
+            this.log_player();
+            console.log(target);
+            return target ;
+        }    
+        // Разрешить ходить по областям с бабочками вдруг там блрильанты  
+        this.fearless = true;
+        return "";
     } 
     distance(a, b) {
         return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
@@ -146,17 +226,19 @@ class Screen {
 
     } 
     navigate(target = this.nearby_diamand) {
-        // if (!target) return "";
+        if (!target) return "";
         // this.player_prev = this.player;
         this.log_player();
 
-        this.find_butterfly();
-
+        // this.find_dangers();
         
         if (Array.isArray(this.steps_bypass) && this.steps_bypass.length) {    
             let step = this.steps_bypass.pop();
 
+            console.log("Маршрут проложен", step);
+
             step = this.check_step(step);
+            console.log('check Rat step = ', step );
             if (!step) {
                 console.log("Перенавигация");
                 this.update();
@@ -166,6 +248,8 @@ class Screen {
             return step;
         }
             
+
+
         let max_distance_xy = this.distance_x(this.player, target) > this.distance_y(this.player, target);
 
         let direction_x = ( this.player.x < target.x ) ? 'r' : 'l';
@@ -196,6 +280,8 @@ class Screen {
 
        if (this.steps_bypass.length) return this.steps_bypass.pop();
 
+    //    this.find_dangers();
+
     //    throw new Error ("ТУПИК!!! Выпускай крысу!!!");
        return " "        
     }
@@ -216,7 +302,7 @@ class Screen {
 
             step = (' :*'.includes(this.screen[y][x]) &&
                 !(y > 0 && this.screen[y-1][x] == 'O' && this.screen[y][x] == ' ') ) ? direction : "";   
-            console.log('check step =', step )        
+            // console.log('check step =', step )        
         return step;
     } 
     rat_run() {
@@ -243,8 +329,8 @@ class Screen {
         }
         return {x, y}
     }
-    log_screen() {
-        this.screen.forEach(el => console.log(el.join("")));
+    log_screen(screen = this.screen ) {
+        screen.forEach(el => console.log(el.join("")));
     }
     log_player() {
         console.log(`Player: x = ${this.player.x} y = ${this.player.y}`);
