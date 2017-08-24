@@ -9,6 +9,7 @@ upd:
 **A temporary decision before learning to hunt butterflies**
 
 * Planted the butterfly in cages
-* If hit the territory of butterflies or ended the goal include a mode of fearlessness
+*If hit the territory of butterflies or ended the goal include a mode of fearlessness
 
+**Rats should be trained better.**
 

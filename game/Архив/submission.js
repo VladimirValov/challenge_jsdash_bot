@@ -95,7 +95,7 @@ class Screen {
     mapping_screen(screen) {
         let world = screen.map(el => el.split(""));
 
-        world = this.guard_butterfly(world);
+        if (!this.fearless)  world = this.guard_butterfly(world);
 
         return world;
     }
@@ -113,58 +113,33 @@ class Screen {
                 }
             }
         }
+        for(let i = 0; i < bflys.length; i++) {
+            let b = bflys[i];
 
-        if (!this.fearless) {
-            for(let i = 0; i < bflys.length; i++) {
-                let b = bflys[i];
-
-                if ( screen[b.y][b.x+1] == ' ')    {
-                    bflys.push({x : b.x + 1, y: b.y})
-                    screen[b.y][b.x+1] = '/'
-                }
-                if ( screen[b.y][b.x-1]   == ' ')    {
-                    bflys.push({x : b.x - 1, y: b.y})
-                    screen[b.y][b.x-1] = '/'
-                }
-                if ( screen[b.y+1][b.x] == ' ' )    {
-                    bflys.push({x : b.x, y: b.y + 1})
-                    screen[b.y+1][b.x] = '/'
-                }
-                if ( screen[b.y-1][b.x] == ' ')    {
-                    bflys.push({x : b.x, y: b.y - 1})
-                    screen[b.y-1][b.x] == '/';
-                } 
+            if ( screen[b.y][b.x+1] == ' ')    {
+                bflys.push({x : b.x + 1, y: b.y})
+                screen[b.y][b.x+1] = '/'
+            }
+            if ( screen[b.y][b.x-1]   == ' ')    {
+                bflys.push({x : b.x - 1, y: b.y})
+                screen[b.y][b.x-1] = '/'
+            }
+            if ( screen[b.y+1][b.x] == ' ' )    {
+                bflys.push({x : b.x, y: b.y + 1})
+                screen[b.y+1][b.x] = '/'
+            }
+            if ( screen[b.y-1][b.x] == ' ')    {
+                bflys.push({x : b.x, y: b.y - 1})
+                screen[b.y-1][b.x] == '/';
             } 
-        }
-       
+        } 
     // // делаем изгородь вокруг бабочки 
         bflys.forEach(b => {
             screen[b.y][b.x+1] = '/'
             screen[b.y][b.x-1] = '/'
             screen[b.y+1][b.x] = '/'
             screen[b.y-1][b.x] = '/'
-
-            //mapping array around butterfly
-            if (this.fearless) {
-                let r = 3,
-                    y1 = b.y - r, y2 = b.y + r,
-                    x1 = b.x - r, x2 = b.x + r;
-
-                for(let y = y1; y < y2 && y > r && y < screen.length - r; y++ ) {
-                    let row = screen[y];
-                    for(let x = x1; x < x2 && x > r && x < row.length - r; x++) {
-                        screen[y][x] = '/';
-                    }
-             
-                }
-            }
         })
-
-        // butterfly free ! switch feearless 
-        if (screen[this.player.y][this.player.x] == '/' ) {
-            this.fearless = true
-            screen[this.player.y][this.player.x] = 'A';
-        };
 
     return screen;
     }
@@ -179,8 +154,19 @@ class Screen {
             for (let x = 1; x < row.length -1; x ++) {
                 
                 if (row[x] == 'A') this.player = {x, y};
+
                 if (row[x] == '*') this.diamands.push({x, y})
+                
+                if (this.fearless && '/|\\-'.includes(row[x]) ) {
+                    this.butterfly.push({x, y});              
+                }
             }
+        }
+        
+        if (!this.fearless && this.butterfly.length) {
+            this.butterfly.forEach(el => {
+                if (el.x == this.player.x && el.y == this.player.y) this.fearless = true;
+            } )
         }
     }
     find_nearby_diamand() {
@@ -188,11 +174,11 @@ class Screen {
             this.diamands.sort((a, b) => this.distance(this.player, b) - this.distance(this.player, a) );
 
             let target = this.diamands.pop();
-            // this.log_player();
-            // console.log(target);
+            this.log_player();
+            console.log(target);
             return target ;
         }    
-        // Разрешить ходить по областям с бабочками вдруг там остались брильнтами  
+        // Разрешить ходить по областям с бабочками вдруг там брильнтами  
         this.fearless = true;
         return "";
     } 
@@ -208,16 +194,20 @@ class Screen {
     get_posible_step() {
 
     } 
-
     navigate(target = this.nearby_diamand) {
         if (!target) return "";
         
         if (Array.isArray(this.steps_bypass) && this.steps_bypass.length) {    
             let step = this.steps_bypass.pop();
             step = this.check_step(step);
-        
+
+            if (!step) {
+                this.update();
+                step = this.navigate();
+            }           
             return step;
-        }  
+        }     
+
 
         let max_distance_xy = this.distance_x(this.player, target) > this.distance_y(this.player, target),
             direction_x = ( this.player.x < target.x ) ? 'r' : 'l',
@@ -243,21 +233,22 @@ class Screen {
 
        return " "        
     }
-
+    find_butterfly() {
+        for(let y = 1; y < this.screen.length -1; y++ ) {
+            let row = this.screen[y];
+            for(let x = 0; x < row.length; x++) {
+                if ('/|\\-'.includes(row[x])){
+                }
+            }
+        }
+    }
     check_step(direction, point = this.player) {
 
-        let {x, y} = this.udlr_to_xy(direction, point),        
-            step = (' :*'.includes(this.screen[y][x])) ? direction : "";   
-            
-            if (y > 0 && 'O*'.includes(this.screen[y-1][x]) && this.screen[y][x] == ' ')  {
-                step = '';
-                // console.log('Падающй камень туда нельзя!!');
-            };
+        let {x, y} = this.udlr_to_xy(direction, point),
 
-            if( 'O*'.includes(this.screen[this.player.y-1][this.player.x])) {
-                // console.log('камен над головой');
-            }
-      
+            step = (' :*'.includes(this.screen[y][x]) &&
+                !(y > 0 && this.screen[y-1][x] == 'O' && this.screen[y][x] == ' ') ) ? direction : "";   
+            // console.log('check step =', step )        
         return step;
     } 
     rat_run() {
@@ -282,17 +273,6 @@ class Screen {
         }
         return {x, y}
     }
-    get_posible_step() {
-        if (!this.step) {
-            let {x, y} = this.player;
-            
-            let step = this.check_step('r');
-            if(!step) step = this.check_step('l');
-            if(!step) step = this.check_step('u');
-            if(!step) step = this.check_step('d');
-            this.step = step;
-        }
-    }
     log_screen(screen = this.screen ) {
         screen.forEach(el => console.log(el.join("")));
     }
@@ -303,6 +283,7 @@ class Screen {
         this.diamands.forEach((el, i) =>
             console.log(`${i} Diamands: x = ${el.x} y = ${el.y}`))
     }
+
 }
 
 
@@ -310,11 +291,7 @@ exports.play = function*(screen){
     let src = new Screen(screen);
 
     while (true){       
-        // src.update(screen); 
-        
-        console.log('src.step =' + src.step + "     "); 
-        src.get_posible_step();
-        // src.log_screen();
+        src.update(screen); 
 
         yield src.step;
     }
